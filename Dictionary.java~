@@ -1,0 +1,114 @@
+/** 
+ * EECS233 WrittenHW3
+ * Tung Ho Lin
+ * Spelling Checker: Dictionary
+ */
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+//using a chaining/bucket hashtable to implement the words database
+//the hastable will contain 26 slots: initials a-z
+/**
+ * The Dictionary text file has to be written in: one word one line format 
+ * for the build function to work
+ */ 
+public class Dictionary {
+  
+  private MyBucket[] alphabets;  //a chaining hastable, each slot points to a bucket
+  
+  public Dictionary() {
+    alphabets = new MyBucket[26]; //initials a-z
+    for(int i=0; i<26; i++)
+      alphabets[i] = new MyBucket(null);
+  }
+  
+  public void addWord(String input) {
+    String word = input.toLowerCase();
+    word = word.replaceAll("\\s*\\p{Punct}+\\s*$", "");  //remove all whitespaces and punctuation at the end of the word
+    int firstchar = word.charAt(0);
+    if(firstchar >= 'a' && firstchar <='z')  //if the first char is within range
+      alphabets[firstchar - 'a'].add(word);  //find the appropriate slot for the word
+    else
+      return;
+  }
+  
+  public boolean findWord(String input) {
+    String word = input.toLowerCase();
+    int firstchar = word.charAt(0);
+    if(firstchar >= 'a' && firstchar <='z') {
+      
+      return alphabets[firstchar - 'a'].contains(word);  //find the word in the appropriate slot
+    }
+    else
+      return false;
+  }
+  
+ //limitation of this method, see top
+  public void build(String inputfile) {
+    try {
+    BufferedReader reader = new BufferedReader(new FileReader(inputfile));
+    String word;
+    while((word = reader.readLine()) != null)
+      addWord(word);
+    reader.close();
+    }
+    catch (IOException e) {
+      System.err.println("File not found!");
+    }
+  }
+  
+  
+  //inner class Bucket that contains a bunch of nodes
+  public class MyBucket {
+    private MyNode top;
+    
+    public MyBucket(MyNode top) {
+      this.top = top;
+    }
+    
+    public boolean isEmpty() {
+      return top == null;
+    }
+    
+    public void print() {
+      String content = "";
+      MyNode current = top;
+      while(current != null) {
+        content = content + current.data;
+        current = current.next;
+      }
+    }
+    
+    public boolean contains(String input) {
+      if(isEmpty())
+        return false;
+      MyNode current = top;
+      while(current != null) {
+        if(current.data.equals(input))
+          return true;
+        current = current.next;
+      }
+      return false;
+    }
+    
+    public void add(String input) {
+      if(contains(input))
+        return;
+      top = new MyNode(input, top);
+    }
+  }
+        
+    //inner class Node that contains a word
+    public class MyNode {
+  
+      private String data;
+    
+      private MyNode next;
+    
+    public MyNode(String data, MyNode next){
+      this.data = data;
+      this.next = next;
+    }
+  }
+}
